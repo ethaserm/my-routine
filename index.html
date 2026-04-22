@@ -1763,13 +1763,15 @@ function buildGuide() {
 
 // ── PAGE SWITCH ──
 function switchPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.page === page));
-  if (page === 'weight') renderWeight();
-  if (page === 'log') renderWL();
-  if (page === 'pb') renderPBs();
-  window.scrollTo(0, 0);
+  try {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.page === page));
+    if (page === 'weight') renderWeight();
+    if (page === 'log') renderWL();
+    if (page === 'pb') renderPBs();
+    window.scrollTo(0, 0);
+  } catch(e) { console.error('switchPage error:', e); }
 }
 
 // ── DAY PANELS ──
@@ -1816,18 +1818,6 @@ function closeModal(e) {
   }
 }
 
-
-
-// ── PAGE SWITCH ──
-function switchPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.page === page));
-  if (page === 'weight') renderWeight();
-  if (page === 'log') renderWL();
-  if (page === 'pb') renderPBs();
-  window.scrollTo(0, 0);
-}
 
 
 
@@ -2530,15 +2520,17 @@ function clearMissed(day) {
 
 // ── INIT ALL ──
 function initAll() {
-  buildGuide();
-  initWeight();
-  renderWL();
-  renderPBs();
-  renderStreak();
-  const days = ['sun','mon','tue','wed','thu','fri','sat'];
-  const today = days[new Date().getDay()];
-  const todayEl = document.getElementById('wd-' + today);
-  if (todayEl && !todayEl.classList.contains('rest-day')) showDay(today);
+  try { buildGuide(); } catch(e) { console.error('buildGuide error:', e); }
+  try { initWeight(); } catch(e) { console.error('initWeight error:', e); }
+  try { renderWL(); } catch(e) { console.error('renderWL error:', e); }
+  try { renderPBs(); } catch(e) { console.error('renderPBs error:', e); }
+  try { renderStreak(); } catch(e) { console.error('renderStreak error:', e); }
+  try {
+    const days = ['sun','mon','tue','wed','thu','fri','sat'];
+    const today = days[new Date().getDay()];
+    const todayEl = document.getElementById('wd-' + today);
+    if (todayEl && !todayEl.classList.contains('rest-day')) showDay(today);
+  } catch(e) { console.error('showDay error:', e); }
 }
 
 initAll();
