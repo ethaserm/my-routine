@@ -2035,14 +2035,25 @@ let wlSetCounter = 0;
 function addSetRow(exId) {
   const sid = wlSetCounter++;
   const list = document.getElementById('wl-sets-' + exId);
-  const setNum = list.querySelectorAll('.wl-set-row').length + 1;
+  const existingRows = list.querySelectorAll('.wl-set-row');
+  const setNum = existingRows.length + 1;
+
+  // Grab last set's values to pre-fill
+  let lastKg = '', lastReps = '';
+  if (existingRows.length > 0) {
+    const lastRow = existingRows[existingRows.length - 1];
+    const lastInputs = lastRow.querySelectorAll('.wl-set-input');
+    lastKg = lastInputs[0].value || '';
+    lastReps = lastInputs[1].value || '';
+  }
+
   const row = document.createElement('div');
   row.className = 'wl-set-row';
   row.id = 'wl-set-' + sid;
   row.innerHTML = `
     <span class="wl-set-num">${setNum}</span>
-    <input class="wl-set-input" type="number" inputmode="decimal" min="0" max="999" step="0.5" placeholder="0">
-    <input class="wl-set-input" type="number" inputmode="numeric" min="0" max="99" placeholder="0">
+    <input class="wl-set-input" type="number" inputmode="decimal" min="0" max="999" step="0.5" value="${lastKg}" placeholder="0">
+    <input class="wl-set-input" type="number" inputmode="numeric" min="0" max="99" value="${lastReps}" placeholder="0">
     <button class="wl-set-check" onclick="toggleSetDone(this)" title="Mark done">✓</button>
     <button class="wl-set-del" onclick="removeSetRow('wl-set-${sid}', ${exId})">✕</button>`;
   list.appendChild(row);
@@ -2199,19 +2210,19 @@ function editSession(id) {
   const session = log.find(s => s.id === Number(id));
   if (!session) return;
 
-  // Switch to sessions tab
+  // Switch to sessions tab if not already there
   const sessionsBtn = document.getElementById('lt-sessions');
   switchLogTab('sessions', sessionsBtn);
 
-  // Scroll to top
-  window.scrollTo(0, 0);
-
-  // If already editing, cancel first
-  if (wlActive) cancelSession();
-
-  // Load session into editor
+  // Reset state cleanly without calling cancelSession (which hides the editor)
   wlActive = true;
   wlEditingId = id;
+
+  // Collapse the card being edited so it doesn't look duplicated
+  const card = document.getElementById('wls-' + id);
+  if (card) card.classList.remove('open');
+
+  // Show editor
   document.getElementById('wl-session-editor').style.display = 'block';
   document.getElementById('wl-start-btn').style.display = 'none';
   document.getElementById('wl-form-title').textContent = 'Editing session';
@@ -2239,15 +2250,14 @@ function editSession(id) {
       <button class="wl-add-set" onclick="addSetRow(${rowId})">+ Add set</button>`;
     document.getElementById('wl-exercises-list').appendChild(div);
 
-    // Add pre-filled set rows
-    ex.sets.forEach(set => {
-      const sid = rowId + '_' + Date.now() + Math.random();
+    // Add pre-filled set rows with editable values
+    ex.sets.forEach((set, i) => {
+      const sid = rowId + '_' + i;
       const setRow = document.createElement('div');
       setRow.className = 'wl-set-row';
       setRow.id = 'wl-set-' + sid;
-      const setNum = document.getElementById('wl-sets-' + rowId).querySelectorAll('.wl-set-row').length + 1;
       setRow.innerHTML = `
-        <span class="wl-set-num">${setNum}</span>
+        <span class="wl-set-num">${i + 1}</span>
         <input class="wl-set-input" type="number" inputmode="decimal" min="0" max="999" step="0.5" value="${set.kg}" placeholder="0">
         <input class="wl-set-input" type="number" inputmode="numeric" min="0" max="99" value="${set.reps}" placeholder="0">
         <button class="wl-set-check" onclick="toggleSetDone(this)" title="Mark done">✓</button>
@@ -2255,6 +2265,9 @@ function editSession(id) {
       document.getElementById('wl-sets-' + rowId).appendChild(setRow);
     });
   });
+
+  // Scroll to editor
+  document.getElementById('wl-form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 let wlEditingId = null;
