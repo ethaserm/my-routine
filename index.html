@@ -1895,6 +1895,7 @@ function getPBs() { try { return JSON.parse(localStorage.getItem(PB_KEY)) || {};
 function savePBs(p) { localStorage.setItem(PB_KEY, JSON.stringify(p)); if(window.fbSave) fbSave('personalBests', p); }
 
 let wlActive = false;
+let wlExCounter = 0;
 
 // Map of training day -> exercises in order (matching the routine)
 const DAY_EXERCISES = {
