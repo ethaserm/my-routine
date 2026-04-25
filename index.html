@@ -100,12 +100,13 @@ window.fbSave = async function(key, data) {
 
 // ── Load all data from Firestore on start ──
 window.fbLoadAll = async function() {
-  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed'];
+  const keys = ['workoutLog', 'personalBests', 'weightLog', 'missed', 'photos'];
   const lsKeys = {
     workoutLog: 'myRoutine_workoutLog',
     personalBests: 'myRoutine_personalBests',
     weightLog: 'myRoutine_weightLog',
-    missed: 'myRoutine_missed'
+    missed: 'myRoutine_missed',
+    photos: 'myRoutine_photos'
   };
   try {
     await Promise.all(keys.map(async key => {
@@ -117,8 +118,10 @@ window.fbLoadAll = async function() {
     }));
     console.log('Firebase data loaded');
   } catch(e) { console.warn('Firebase load failed, using local data:', e); }
-  // Now init the app
+  // Now init the app with fresh data
   if (window.initAll) window.initAll();
+  // Re-render streak specifically since it needs session data
+  setTimeout(() => { if (window.renderStreak) window.renderStreak(); }, 100);
 };
 
 // Show sync indicator
@@ -184,7 +187,7 @@ window.fbLoadAll();
   .week-day.active .wd-name { color: var(--text); }
   .wd-name { font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); transition: color 0.15s; }
   .wd-dot { width: 8px; height: 8px; border-radius: 50%; transition: transform 0.2s; }
-  .wd-label { font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted2); text-align: center; line-height: 1.3; }
+  .wd-label { font-size: 8px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted2); text-align: center; line-height: 1.4; word-break: break-word; }
   .rest-day { cursor: default; }
   .rest-day .wd-name { color: var(--muted2); }
 
@@ -213,7 +216,20 @@ window.fbLoadAll();
   .day-tip { margin-top: 12px; padding: 9px 12px; background: rgba(255,255,255,0.03); border-left: 2px solid; border-radius: 0 6px 6px 0; font-size: 12px; color: var(--muted); line-height: 1.6; font-style: italic; }
   .rest-note { margin-top: 12px; font-size: 11px; color: var(--muted2); }
 
-  /* ── LOG INNER TABS ── */
+  /* ── PHOTOS ── */
+  .photo-upload-btn { display:inline-flex; align-items:center; gap:8px; cursor:pointer; background:var(--surface2); border:1px solid var(--border2); color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; padding:10px 20px; border-radius:10px; transition:all 0.15s; }
+  .photo-upload-btn:hover { border-color:var(--c5); color:var(--c5); }
+  .photo-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:4px; }
+  .photo-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; transition:all 0.15s; position:relative; }
+  .photo-card:hover { border-color:rgba(255,255,255,0.2); }
+  .photo-card.compare-selected { border-color:var(--c1); box-shadow:0 0 0 2px rgba(232,255,71,0.3); }
+  .photo-card img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; }
+  .photo-card-info { padding:8px 10px; }
+  .photo-card-label { font-size:12px; font-weight:600; color:var(--text); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .photo-card-meta { font-size:10px; color:var(--muted); display:flex; gap:6px; align-items:center; }
+  .photo-card-tag { background:var(--surface2); border-radius:4px; padding:1px 6px; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; }
+  .photo-card-del { position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6); border:none; color:rgba(255,255,255,0.7); width:26px; height:26px; border-radius:50%; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.15s; }
+  .photo-card:hover .photo-card-del { opacity:1; }
   .log-tabs { max-width: 760px; margin: 0 auto 1rem; display: flex; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
   .log-tab { font-family: 'DM Sans',sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.05em; padding: 8px 16px; border: none; background: transparent; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; text-transform: uppercase; }
   .log-tab.active { color: #FF9F47; border-bottom-color: #FF9F47; }
@@ -680,13 +696,13 @@ window.fbLoadAll();
 </div>
 
 <div class="week-strip">
-  <div class="week-day" id="wd-mon" onclick="showDay('mon')"><span class="wd-name">Mon</span><span class="wd-dot" style="background:var(--c1);"></span><span class="wd-label">Chest<br>Tris</span></div>
+  <div class="week-day" id="wd-mon" onclick="showDay('mon')"><span class="wd-name">Mon</span><span class="wd-dot" style="background:var(--c1);"></span><span class="wd-label">Chest · Triceps · Shoulders</span></div>
   <div class="week-day rest-day" id="wd-tue"><span class="wd-name">Tue</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Hockey</span></div>
-  <div class="week-day" id="wd-wed" onclick="showDay('wed')"><span class="wd-name">Wed</span><span class="wd-dot" style="background:var(--c2);"></span><span class="wd-label">Back<br>Bis</span></div>
-  <div class="week-day" id="wd-thu" onclick="showDay('thu')"><span class="wd-name">Thu</span><span class="wd-dot" style="background:var(--c3);"></span><span class="wd-label">Legs<br>Abs</span></div>
+  <div class="week-day" id="wd-wed" onclick="showDay('wed')"><span class="wd-name">Wed</span><span class="wd-dot" style="background:var(--c2);"></span><span class="wd-label">Back · Biceps</span></div>
+  <div class="week-day" id="wd-thu" onclick="showDay('thu')"><span class="wd-name">Thu</span><span class="wd-dot" style="background:var(--c3);"></span><span class="wd-label">Legs · Abs</span></div>
   <div class="week-day rest-day" id="wd-fri"><span class="wd-name">Fri</span><span class="wd-dot" style="background:#2a2a2a;"></span><span class="wd-label">Rest</span></div>
-  <div class="week-day" id="wd-sat" onclick="showDay('sat')"><span class="wd-name">Sat</span><span class="wd-dot" style="background:var(--c4);"></span><span class="wd-label">Chest<br>+Back</span></div>
-  <div class="week-day" id="wd-sun" onclick="showDay('sun')"><span class="wd-name">Sun</span><span class="wd-dot" style="background:var(--c5);"></span><span class="wd-label">Shldrs<br>+Arms</span></div>
+  <div class="week-day" id="wd-sat" onclick="showDay('sat')"><span class="wd-name">Sat</span><span class="wd-dot" style="background:var(--c4);"></span><span class="wd-label">Chest · Abs</span></div>
+  <div class="week-day" id="wd-sun" onclick="showDay('sun')"><span class="wd-name">Sun</span><span class="wd-dot" style="background:var(--c5);"></span><span class="wd-label">Shoulders · Arms</span></div>
 </div>
 
 <div class="content">
@@ -875,20 +891,21 @@ window.fbLoadAll();
   <!-- SAT -->
   <div class="day-panel" id="panel-sat">
     <div class="day-card">
-      <div class="day-card-header"><div class="day-num c4">SAT</div><div class="day-meta"><div class="day-name c4">Chest + Back</div><div class="day-focus">Push/pull superset day · balanced upper body</div></div><div class="day-volume">6 exercises</div></div>
+      <div class="day-card-header"><div class="day-num c4">SAT</div><div class="day-meta"><div class="day-name c4">Chest + Abs</div><div class="day-focus">Second chest hit · core circuit finisher</div></div><div class="day-volume">7 exercises</div></div>
       <div class="day-body">
         <div class="section"><div class="section-label"><span class="bar bar4"></span>Chest</div><div class="ex-list">
           <div class="ex-row" onclick="openModal('bench-press')"><span class="ex-name">Bench press</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">4 × 8</span></div>
           <div class="ex-row" onclick="openModal('incline-bench')"><span class="ex-name">Incline bench press</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
           <div class="ex-row" onclick="openModal('flye')"><span class="ex-name">Low-to-high flye</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 12</span></div>
         </div></div>
-        <div class="section"><div class="section-label"><span class="bar bar4"></span>Back</div><div class="ex-list">
-          <div class="ex-row" onclick="openModal('deadlift')"><span class="ex-name">Deadlifts</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 8</span></div>
-          <div class="ex-row" onclick="openModal('single-arm-row')"><span class="ex-name">Single arm rows</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10 / arm</span></div>
-          <div class="ex-row" onclick="openModal('shrugs')"><span class="ex-name">Shrugs</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 12</span></div>
+        <div class="section"><div class="section-label"><span class="bar bar4"></span>Abs</div><div class="ex-list">
+          <div class="ex-row" onclick="openModal('crunches')"><span class="ex-name">Elbow to knees (crunches)</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
+          <div class="ex-row" onclick="openModal('leg-raises')"><span class="ex-name">Leg raises</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
+          <div class="ex-row" onclick="openModal('v-ups')"><span class="ex-name">V-ups</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
+          <div class="ex-row" onclick="openModal('russian-twists')"><span class="ex-name">Russian twists</span><span class="ex-guide-hint">form ↗</span><span class="ex-sets">3 × 10</span></div>
         </div></div>
-        <p class="day-tip tip4">Second chest+back hit — slightly lower volume. Try supersetting: bench then immediately row. Saves time, opposing muscles recover while the other works.</p>
-        <p class="rest-note">⏱ 90 sec all compounds</p>
+        <p class="day-tip tip4">Second chest hit at slightly lower volume — keep it sharp. Core circuit straight through with minimal rest, 30 sec between exercises.</p>
+        <p class="rest-note">⏱ 90 sec chest compounds · 30 sec abs</p>
       </div>
     </div>
   </div>
@@ -1128,6 +1145,7 @@ window.fbLoadAll();
 <div class="log-tabs">
   <button class="log-tab active" id="lt-sessions" onclick="switchLogTab('sessions', this)">Sessions</button>
   <button class="log-tab" id="lt-overview" onclick="switchLogTab('overview', this)">Overview</button>
+  <button class="log-tab" id="lt-photos" onclick="switchLogTab('photos', this)">Photos</button>
 </div>
 
 <!-- TAB: SESSIONS -->
@@ -1167,6 +1185,196 @@ window.fbLoadAll();
 </div>
 
 <footer style="margin-top:2.5rem;">All sessions saved locally in your browser</footer>
+</div>
+
+<!-- TAB: PHOTOS -->
+<div class="log-tab-panel" id="ltp-photos">
+<div class="wl-wrap">
+  <div class="wl-card" style="text-align:center;">
+    <div class="wl-card-title" style="margin-bottom:12px;">Progress Photos</div>
+    <label class="photo-upload-btn" for="photo-file-input">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Add Photo
+    </label>
+    <input type="file" id="photo-file-input" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+  </div>
+
+  <!-- Photo upload form (hidden until photo selected) -->
+  <div id="photo-form" class="wl-card" style="display:none;">
+    <div class="wl-card-title" style="margin-bottom:12px;">New Photo</div>
+    <img id="photo-preview" style="width:100%;max-height:300px;object-fit:cover;border-radius:8px;margin-bottom:12px;">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input type="text" id="photo-name" class="wl-note-input" placeholder="Label (e.g. Front pose, Back progress...)">
+      <select id="photo-body-part" class="wl-ex-name-select">
+        <option value="">— Body part —</option>
+        <option value="full">Full body</option>
+        <option value="chest">Chest</option>
+        <option value="back">Back</option>
+        <option value="shoulders">Shoulders</option>
+        <option value="arms">Arms / Biceps</option>
+        <option value="legs">Legs</option>
+        <option value="abs">Abs / Core</option>
+      </select>
+      <input type="date" id="photo-date" class="wt-date-input">
+    </div>
+    <div class="wl-save-row" style="margin-top:12px;">
+      <button class="wl-save-btn" onclick="savePhoto()">Save photo</button>
+      <button class="wl-cancel-btn" onclick="cancelPhoto()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Filter by body part -->
+  <div id="photo-filters" class="pb-filters" style="display:none;">
+    <button class="filter-btn active" data-pcat="all" onclick="filterPhotos('all',this)">All</button>
+    <button class="filter-btn" data-pcat="full" onclick="filterPhotos('full',this)">Full body</button>
+    <button class="filter-btn" data-pcat="chest" onclick="filterPhotos('chest',this)">Chest</button>
+    <button class="filter-btn" data-pcat="back" onclick="filterPhotos('back',this)">Back</button>
+    <button class="filter-btn" data-pcat="shoulders" onclick="filterPhotos('shoulders',this)">Shoulders</button>
+    <button class="filter-btn" data-pcat="arms" onclick="filterPhotos('arms',this)">Arms</button>
+    <button class="filter-btn" data-pcat="legs" onclick="filterPhotos('legs',this)">Legs</button>
+    <button class="filter-btn" data-pcat="abs" onclick="filterPhotos('abs',this)">Abs</button>
+  </div>
+
+  <!-- Compare mode -->
+  <div id="photo-compare-bar" style="display:none;" class="wl-card" style="padding:10px 14px;">
+    <div style="font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Compare mode — tap two photos</div>
+    <div id="photo-compare-selected" style="font-size:12px;color:var(--muted2);">0 / 2 selected</div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="wl-save-btn" onclick="showComparison()" style="flex:1;">Compare</button>
+      <button class="wl-cancel-btn" onclick="exitCompareMode()">Cancel</button>
+    </div>
+  </div>
+  <button id="photo-compare-btn" class="wl-add-ex-btn" style="display:none;" onclick="enterCompareMode()">⇄ Compare two photos</button>
+
+  <div id="photo-grid" class="photo-grid"></div>
+  <!-- Pose Guide -->
+  <div class="wl-card" id="pose-guide-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="wl-card-title" style="margin:0;">Pose Guide</div>
+      <button onclick="togglePoseGuide()" id="pose-guide-toggle" style="font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">Hide</button>
+    </div>
+    <div id="pose-guide-body">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">Take the same 3 poses each time for a proper comparison. Same spot, same lighting, same time of day.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+
+        <!-- Front flexing -->
+        <div style="text-align:center;">
+          <div style="background:var(--surface2);border-radius:10px;padding:12px 6px;margin-bottom:6px;">
+            <svg viewBox="0 0 60 120" width="50" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="30" cy="9" r="7" fill="none" stroke="#E8FF47" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- torso -->
+              <line x1="30" y1="16" x2="30" y2="56" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- left arm flexing up -->
+              <line x1="30" y1="22" x2="12" y2="26" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="12" y1="26" x2="7" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- right arm flexing up -->
+              <line x1="30" y1="22" x2="48" y2="26" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="48" y1="26" x2="53" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- hips -->
+              <line x1="30" y1="56" x2="20" y2="59" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30" y1="56" x2="40" y2="59" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- legs -->
+              <line x1="20" y1="59" x2="18" y2="88" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="18" y1="88" x2="16" y2="112" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="40" y1="59" x2="42" y2="88" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="42" y1="88" x2="44" y2="112" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="16" y1="112" x2="8" y2="114" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <line x1="44" y1="112" x2="52" y2="114" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <!-- bicep bumps -->
+              <ellipse cx="9" cy="20" rx="3" ry="4" fill="#E8FF47" opacity="0.7" transform="rotate(-20 9 20)"/>
+              <ellipse cx="51" cy="20" rx="3" ry="4" fill="#E8FF47" opacity="0.7" transform="rotate(20 51 20)"/>
+            </svg>
+          </div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--c1);">Front</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">Both arms up, double bicep flex</div>
+        </div>
+
+        <!-- Side flexing -->
+        <div style="text-align:center;">
+          <div style="background:var(--surface2);border-radius:10px;padding:12px 6px;margin-bottom:6px;">
+            <svg viewBox="0 0 60 120" width="50" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="32" cy="9" r="7" fill="none" stroke="#E8FF47" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- torso -->
+              <line x1="32" y1="16" x2="30" y2="56" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- front arm flexing -->
+              <line x1="30" y1="22" x2="16" y2="27" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="16" y1="27" x2="13" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- back arm tucked behind -->
+              <line x1="30" y1="22" x2="44" y2="26" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 2" opacity="0.5"/>
+              <line x1="44" y1="26" x2="46" y2="42" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 2" opacity="0.5"/>
+              <!-- bicep bump -->
+              <ellipse cx="14" cy="21" rx="3" ry="4" fill="#FF9F47" opacity="0.8" transform="rotate(-15 14 21)"/>
+              <!-- hips -->
+              <line x1="30" y1="56" x2="24" y2="59" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30" y1="56" x2="36" y2="59" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- legs -->
+              <line x1="24" y1="59" x2="22" y2="88" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="22" y1="88" x2="20" y2="112" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="36" y1="59" x2="36" y2="88" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="36" y1="88" x2="36" y2="112" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="20" y1="112" x2="12" y2="114" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <line x1="36" y1="112" x2="44" y2="114" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#FF9F47;">Side</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">Turn 90°, one arm up flexing</div>
+        </div>
+
+        <!-- Back double bicep -->
+        <div style="text-align:center;">
+          <div style="background:var(--surface2);border-radius:10px;padding:12px 6px;margin-bottom:6px;">
+            <svg viewBox="0 0 60 120" width="50" xmlns="http://www.w3.org/2000/svg">
+              <!-- head back of head -->
+              <circle cx="30" cy="9" r="6" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.35)" stroke-width="2" stroke-linecap="round"/>
+              <!-- torso -->
+              <line x1="30" y1="15" x2="30" y2="56" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- both arms up flexing (back view) -->
+              <line x1="30" y1="22" x2="12" y2="26" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="12" y1="26" x2="7" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30" y1="22" x2="48" y2="26" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="48" y1="26" x2="53" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- tricep bumps on back view -->
+              <ellipse cx="9" cy="21" rx="3" ry="4" fill="var(--c2)" opacity="0.7" transform="rotate(-20 9 21)"/>
+              <ellipse cx="51" cy="21" rx="3" ry="4" fill="var(--c2)" opacity="0.7" transform="rotate(20 51 21)"/>
+              <!-- spine/back detail -->
+              <line x1="30" y1="22" x2="30" y2="54" stroke="rgba(232,255,71,0.2)" stroke-width="1" stroke-dasharray="2 3"/>
+              <!-- lat width hint -->
+              <path d="M22 30 Q14 40 18 50" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <path d="M38 30 Q46 40 42 50" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <!-- hips -->
+              <line x1="30" y1="56" x2="20" y2="59" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="30" y1="56" x2="40" y2="59" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- legs -->
+              <line x1="20" y1="59" x2="18" y2="88" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="18" y1="88" x2="16" y2="112" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="40" y1="59" x2="42" y2="88" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="42" y1="88" x2="44" y2="112" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="16" y1="112" x2="8" y2="114" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <line x1="44" y1="112" x2="52" y2="114" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--c2);">Back</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;">Face away, both arms up flexing</div>
+        </div>
+
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--muted);line-height:1.6;">
+        💡 <strong style="color:var(--text);">Tip:</strong> Same spot, same lighting, same time of day each time — morning before eating is most consistent. Even once a month is enough to see real progress.
+      </div>
+    </div>
+  </div>
+
+  <div id="photo-empty" class="wt-empty" style="display:none;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--muted2);letter-spacing:0.1em;margin-bottom:8px;">NO PHOTOS YET</div>
+    <div style="font-size:13px;color:var(--muted);">Add your first progress photo above.</div>
+  </div>
+</div>
+</div>
+
+<!-- Comparison modal -->
+<div id="photo-compare-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:200;padding:20px;overflow-y:auto;">
+  <button onclick="closeComparison()" style="position:fixed;top:16px;right:16px;background:rgba(255,255,255,0.1);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;">✕</button>
+  <div id="photo-compare-content" style="display:flex;gap:12px;margin-top:40px;align-items:flex-start;"></div>
 </div>
 
 
@@ -1936,9 +2144,10 @@ const DAY_EXERCISES = {
     { name: 'Bench press',              sets: 4, reps: '8'  },
     { name: 'Incline bench press',      sets: 3, reps: '10' },
     { name: 'Low-to-High Flye',         sets: 3, reps: '12' },
-    { name: 'Deadlift',                 sets: 3, reps: '8'  },
-    { name: 'Single Arm Dumbbell Row',  sets: 3, reps: '10' },
-    { name: 'Shrugs',                   sets: 3, reps: '12' },
+    { name: 'Elbow-to-Knee Crunches',   sets: 3, reps: '10' },
+    { name: 'Leg Raises',               sets: 3, reps: '10' },
+    { name: 'V-Ups',                    sets: 3, reps: '10' },
+    { name: 'Russian Twists',           sets: 3, reps: '10' },
   ],
   sun: [
     { name: 'Overhead Press',           sets: 4, reps: '8'  },
@@ -2503,8 +2712,8 @@ const MUSCLE_MAP = {
     secondary: ['f-abs','f-oblique-l','f-oblique-r']
   },
   sat: {
-    primary: ['f-chest','b-lat-l','b-lat-r','b-rhomboid'],
-    secondary: ['b-tricep-l','b-tricep-r','f-bicep-l','f-bicep-r']
+    primary: ['f-chest','f-abs','f-oblique-l','f-oblique-r'],
+    secondary: ['f-shoulder-l','f-shoulder-r','b-tricep-l','b-tricep-r']
   },
   sun: {
     primary: ['f-shoulder-l','f-shoulder-r','b-rear-delt-l','b-rear-delt-r','b-trap'],
@@ -2516,7 +2725,7 @@ const DAY_LABELS = {
   mon: 'Monday — Chest & Triceps',
   wed: 'Wednesday — Back & Biceps',
   thu: 'Thursday — Legs & Abs',
-  sat: 'Saturday — Chest & Back',
+  sat: 'Saturday — Chest & Abs',
   sun: 'Sunday — Shoulders & Arms'
 };
 
@@ -2554,6 +2763,7 @@ function switchLogTab(tab, btn) {
   btn.classList.add('active');
   document.getElementById('ltp-' + tab).classList.add('active');
   if (tab === 'overview') renderWeeklyOverview();
+  if (tab === 'photos') renderPhotos();
 }
 
 // ════════════════════════════════
@@ -2675,6 +2885,156 @@ function renderWeeklyOverview() {
 }
 
 // ════════════════════════════════
+// PROGRESS PHOTOS
+// ════════════════════════════════
+const PHOTOS_KEY = 'myRoutine_photos';
+let currentPhotoData = null;
+let photoCompareMode = false;
+let photoCompareIds = [];
+let currentPhotoFilter = 'all';
+
+function getPhotos() { try { return JSON.parse(localStorage.getItem(PHOTOS_KEY)) || []; } catch { return []; } }
+function savePhotos(p) { localStorage.setItem(PHOTOS_KEY, JSON.stringify(p)); if(window.fbSave) fbSave('photos', p); }
+
+function togglePoseGuide() {
+  const body = document.getElementById('pose-guide-body');
+  const btn = document.getElementById('pose-guide-toggle');
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? 'block' : 'none';
+  btn.textContent = hidden ? 'Hide' : 'Show';
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentPhotoData = ev.target.result;
+    document.getElementById('photo-preview').src = currentPhotoData;
+    document.getElementById('photo-form').style.display = 'block';
+    document.getElementById('photo-date').value = toLocalDateStr(new Date());
+    document.getElementById('photo-name').value = '';
+    document.getElementById('photo-body-part').value = '';
+    document.getElementById('photo-form').scrollIntoView({ behavior: 'smooth' });
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function savePhoto() {
+  if (!currentPhotoData) return;
+  const name = document.getElementById('photo-name').value.trim() || 'Progress photo';
+  const bodyPart = document.getElementById('photo-body-part').value;
+  const date = document.getElementById('photo-date').value || toLocalDateStr(new Date());
+
+  const photos = getPhotos();
+  photos.unshift({ id: Date.now(), name, bodyPart, date, data: currentPhotoData });
+  savePhotos(photos);
+
+  currentPhotoData = null;
+  document.getElementById('photo-form').style.display = 'none';
+  renderPhotos();
+}
+
+function cancelPhoto() {
+  currentPhotoData = null;
+  document.getElementById('photo-form').style.display = 'none';
+}
+
+function deletePhoto(id) {
+  const photos = getPhotos().filter(p => p.id !== Number(id));
+  savePhotos(photos);
+  renderPhotos();
+}
+
+function filterPhotos(cat, btn) {
+  currentPhotoFilter = cat;
+  document.querySelectorAll('#photo-filters .filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+  renderPhotos();
+}
+
+function enterCompareMode() {
+  photoCompareMode = true;
+  photoCompareIds = [];
+  document.getElementById('photo-compare-bar').style.display = 'block';
+  document.getElementById('photo-compare-btn').style.display = 'none';
+  updateCompareSelected();
+  renderPhotos();
+}
+
+function exitCompareMode() {
+  photoCompareMode = false;
+  photoCompareIds = [];
+  document.getElementById('photo-compare-bar').style.display = 'none';
+  renderPhotos();
+}
+
+function updateCompareSelected() {
+  document.getElementById('photo-compare-selected').textContent = photoCompareIds.length + ' / 2 selected';
+}
+
+function togglePhotoCompare(id) {
+  id = Number(id);
+  if (photoCompareIds.includes(id)) {
+    photoCompareIds = photoCompareIds.filter(i => i !== id);
+  } else if (photoCompareIds.length < 2) {
+    photoCompareIds.push(id);
+  }
+  updateCompareSelected();
+  renderPhotos();
+}
+
+function showComparison() {
+  if (photoCompareIds.length !== 2) return;
+  const photos = getPhotos();
+  const [a, b] = photoCompareIds.map(id => photos.find(p => p.id === id));
+  if (!a || !b) return;
+  const bodyPartLabels = { full:'Full body', chest:'Chest', back:'Back', shoulders:'Shoulders', arms:'Arms', legs:'Legs', abs:'Abs' };
+  document.getElementById('photo-compare-content').innerHTML = [a, b].map(p => `
+    <div style="flex:1;min-width:0;">
+      <img src="${p.data}" style="width:100%;border-radius:10px;object-fit:cover;">
+      <div style="margin-top:8px;font-size:13px;font-weight:600;color:white;">${p.name}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">${p.date}${p.bodyPart ? ' · ' + (bodyPartLabels[p.bodyPart] || p.bodyPart) : ''}</div>
+    </div>`).join('');
+  document.getElementById('photo-compare-modal').style.display = 'block';
+}
+
+function closeComparison() {
+  document.getElementById('photo-compare-modal').style.display = 'none';
+}
+
+function renderPhotos() {
+  const allPhotos = getPhotos();
+  const photos = currentPhotoFilter === 'all' ? allPhotos : allPhotos.filter(p => p.bodyPart === currentPhotoFilter);
+  const grid = document.getElementById('photo-grid');
+  const empty = document.getElementById('photo-empty');
+  const filters = document.getElementById('photo-filters');
+  const compareBtn = document.getElementById('photo-compare-btn');
+
+  const hasPhotos = allPhotos.length > 0;
+  filters.style.display = hasPhotos ? 'flex' : 'none';
+  compareBtn.style.display = hasPhotos && !photoCompareMode ? 'block' : 'none';
+  empty.style.display = photos.length === 0 ? 'block' : 'none';
+
+  const bodyPartLabels = { full:'Full body', chest:'Chest', back:'Back', shoulders:'Shoulders', arms:'Arms', legs:'Legs', abs:'Abs' };
+
+  grid.innerHTML = photos.map(p => {
+    const isSelected = photoCompareIds.includes(p.id);
+    return `<div class="photo-card${isSelected ? ' compare-selected' : ''}" onclick="${photoCompareMode ? `togglePhotoCompare(${p.id})` : ''}">
+      <img src="${p.data}" loading="lazy">
+      <div class="photo-card-info">
+        <div class="photo-card-label">${p.name}</div>
+        <div class="photo-card-meta">
+          <span>${p.date}</span>
+          ${p.bodyPart ? `<span class="photo-card-tag">${bodyPartLabels[p.bodyPart] || p.bodyPart}</span>` : ''}
+        </div>
+      </div>
+      <button class="photo-card-del" onclick="event.stopPropagation();deletePhoto(${p.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ════════════════════════════════
 // MISSED SESSION
 // ════════════════════════════════
 const MISSED_KEY = 'myRoutine_missed';
@@ -2778,6 +3138,7 @@ function initAll() {
   } catch(e) { console.error('showDay error:', e); }
 }
 window.initAll = initAll;
+window.renderStreak = renderStreak;
 
 // Only call initAll directly if Firebase module hasn't taken over
 setTimeout(() => { if (!window.fbReady) initAll(); }, 800);
