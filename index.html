@@ -736,27 +736,35 @@ setTimeout(dismissLoader, 5000);
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen" style="display:none;position:fixed;inset:0;z-index:9998;background:#0b0b0b;background:radial-gradient(ellipse at 30% 20%, rgba(232,255,71,0.04) 0%, #0b0b0b 60%);flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
-  <svg viewBox="0 0 280 340" width="72" style="margin-bottom:28px;" xmlns="http://www.w3.org/2000/svg">
-    <rect width="280" height="340" rx="48" fill="#111"/>
-    <rect x="30" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
-    <rect x="44" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
-    <rect x="55" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
-    <rect x="62" y="84" width="156" height="9" rx="4.5" fill="#2a2a2a"/>
-    <rect x="218" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
-    <rect x="225" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
-    <rect x="236" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
-    <rect x="52" y="196" width="176" height="13" rx="5" fill="#1e1e1e"/>
-    <circle cx="82" cy="186" r="13" fill="none" stroke="white" stroke-width="3.5"/>
-    <line x1="95" y1="186" x2="178" y2="186" stroke="white" stroke-width="4"/>
-    <line x1="112" y1="186" x2="108" y2="88" stroke="white" stroke-width="3.5"/>
-    <line x1="152" y1="186" x2="156" y2="88" stroke="white" stroke-width="3.5"/>
-    <line x1="178" y1="186" x2="198" y2="212" stroke="white" stroke-width="3.5"/>
-    <line x1="198" y1="212" x2="192" y2="232" stroke="white" stroke-width="3.5"/>
-    <line x1="178" y1="186" x2="206" y2="208" stroke="white" stroke-width="3.5"/>
-    <line x1="206" y1="208" x2="204" y2="232" stroke="white" stroke-width="3.5"/>
-    <text x="140" y="282" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="white" text-anchor="middle" letter-spacing="3">MY</text>
-    <text x="140" y="312" font-family="Arial Black,sans-serif" font-size="15" font-weight="700" fill="#E8FF47" text-anchor="middle" letter-spacing="5">ROUTINE</text>
-  </svg>
+  <svg viewBox="0 0 280 200" width="72" style="margin-bottom:28px;" xmlns="http://www.w3.org/2000/svg">
+  <!-- Barbell bar -->
+  <rect x="40" y="92" width="200" height="16" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
+  <!-- Left outer plate -->
+  <rect x="22" y="68" width="28" height="64" rx="6" fill="#E8FF47"/>
+  <!-- Left inner plate -->
+  <rect x="54" y="76" width="18" height="48" rx="4" fill="#E8FF47"/>
+  <!-- Right inner plate -->
+  <rect x="208" y="76" width="18" height="48" rx="4" fill="#E8FF47"/>
+  <!-- Right outer plate -->
+  <rect x="230" y="68" width="28" height="64" rx="6" fill="#E8FF47"/>
+  <!-- Upward arrow through bar -->
+  <!-- Arrow line going from bottom-left to top-right -->
+  <line x1="95" y1="155" x2="185" y2="45" stroke="#E8FF47" stroke-width="14" stroke-linecap="round"/>
+  <!-- Arrow head at top -->
+  <polygon points="185,45 155,52 178,72" fill="#E8FF47"/>
+  <!-- Arrow tail bottom tick -->
+  <line x1="95" y1="155" x2="118" y2="138" stroke="#E8FF47" stroke-width="10" stroke-linecap="round"/>
+  <!-- Cover the bar over the arrow so it looks like arrow goes through it -->
+  <rect x="40" y="92" width="200" height="16" rx="4" fill="#0e0e0e"/>
+  <!-- Bar highlight -->
+  <rect x="40" y="92" width="200" height="16" rx="4" fill="none" stroke="#E8FF47" stroke-width="2"/>
+  <!-- Redraw left plates on top -->
+  <rect x="22" y="68" width="28" height="64" rx="6" fill="#E8FF47"/>
+  <rect x="54" y="76" width="18" height="48" rx="4" fill="#E8FF47"/>
+  <!-- Redraw right plates on top -->
+  <rect x="208" y="76" width="18" height="48" rx="4" fill="#E8FF47"/>
+  <rect x="230" y="68" width="28" height="64" rx="6" fill="#E8FF47"/>
+</svg>
   <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
     <input id="login-email" type="email" inputmode="email" autocomplete="email" placeholder="Email" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:12px;outline:none;width:100%;transition:border-color 0.15s;" onfocus="this.style.borderColor='rgba(232,255,71,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
     <input id="login-password" type="password" autocomplete="current-password" placeholder="Password" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;border-radius:12px;outline:none;width:100%;transition:border-color 0.15s;" onfocus="this.style.borderColor='rgba(232,255,71,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'" onkeydown="if(event.key==='Enter')doLogin()">
@@ -784,32 +792,35 @@ setTimeout(dismissLoader, 5000);
   gap:24px;
   transition:opacity 0.4s ease;
 ">
-  <svg viewBox="0 0 280 340" width="90" xmlns="http://www.w3.org/2000/svg">
-    <rect width="280" height="340" rx="48" fill="#111"/>
-    <rect x="96" y="36" width="6" height="140" rx="3" fill="rgba(255,255,255,0.08)"/>
-    <rect x="178" y="36" width="6" height="140" rx="3" fill="rgba(255,255,255,0.08)"/>
-    <rect x="91" y="80" width="16" height="5" rx="2" fill="rgba(255,255,255,0.18)"/>
-    <rect x="173" y="80" width="16" height="5" rx="2" fill="rgba(255,255,255,0.18)"/>
-    <rect x="30" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
-    <rect x="44" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
-    <rect x="55" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
-    <rect x="62" y="84" width="156" height="9" rx="4.5" fill="#2a2a2a" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-    <rect x="218" y="76" width="7" height="28" rx="3" fill="#E8FF47"/>
-    <rect x="225" y="72" width="11" height="36" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="1.5"/>
-    <rect x="236" y="66" width="14" height="48" rx="5" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
-    <rect x="52" y="196" width="176" height="13" rx="5" fill="#1e1e1e" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-    <circle cx="82" cy="186" r="13" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-    <line x1="95" y1="186" x2="178" y2="186" stroke="white" stroke-width="4" stroke-linecap="round"/>
-    <line x1="112" y1="186" x2="108" y2="88" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-    <line x1="152" y1="186" x2="156" y2="88" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-    <line x1="178" y1="186" x2="198" y2="212" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-    <line x1="198" y1="212" x2="192" y2="232" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-    <line x1="178" y1="186" x2="206" y2="208" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-    <line x1="206" y1="208" x2="204" y2="232" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
-    <line x1="24" y1="252" x2="256" y2="252" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-    <text x="140" y="282" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="white" text-anchor="middle" letter-spacing="3">MY</text>
-    <text x="140" y="312" font-family="Arial Black,sans-serif" font-size="15" font-weight="700" fill="#E8FF47" text-anchor="middle" letter-spacing="5">ROUTINE</text>
-  </svg>
+  <svg viewBox="0 0 280 200" width="90" xmlns="http://www.w3.org/2000/svg">
+  <!-- Barbell bar -->
+  <rect x="40" y="92" width="200" height="16" rx="4" fill="#1a1a1a" stroke="#E8FF47" stroke-width="2"/>
+  <!-- Left outer plate -->
+  <rect x="22" y="68" width="28" height="64" rx="6" fill="#E8FF47"/>
+  <!-- Left inner plate -->
+  <rect x="54" y="76" width="18" height="48" rx="4" fill="#E8FF47"/>
+  <!-- Right inner plate -->
+  <rect x="208" y="76" width="18" height="48" rx="4" fill="#E8FF47"/>
+  <!-- Right outer plate -->
+  <rect x="230" y="68" width="28" height="64" rx="6" fill="#E8FF47"/>
+  <!-- Upward arrow through bar -->
+  <!-- Arrow line going from bottom-left to top-right -->
+  <line x1="95" y1="155" x2="185" y2="45" stroke="#E8FF47" stroke-width="14" stroke-linecap="round"/>
+  <!-- Arrow head at top -->
+  <polygon points="185,45 155,52 178,72" fill="#E8FF47"/>
+  <!-- Arrow tail bottom tick -->
+  <line x1="95" y1="155" x2="118" y2="138" stroke="#E8FF47" stroke-width="10" stroke-linecap="round"/>
+  <!-- Cover the bar over the arrow so it looks like arrow goes through it -->
+  <rect x="40" y="92" width="200" height="16" rx="4" fill="#0e0e0e"/>
+  <!-- Bar highlight -->
+  <rect x="40" y="92" width="200" height="16" rx="4" fill="none" stroke="#E8FF47" stroke-width="2"/>
+  <!-- Redraw left plates on top -->
+  <rect x="22" y="68" width="28" height="64" rx="6" fill="#E8FF47"/>
+  <rect x="54" y="76" width="18" height="48" rx="4" fill="#E8FF47"/>
+  <!-- Redraw right plates on top -->
+  <rect x="208" y="76" width="18" height="48" rx="4" fill="#E8FF47"/>
+  <rect x="230" y="68" width="28" height="64" rx="6" fill="#E8FF47"/>
+</svg>
   <!-- spinner -->
   <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
     <circle cx="16" cy="16" r="12" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2.5"/>
@@ -3631,14 +3642,36 @@ function toLocalDateStr(date) {
 
 let woWeeksToShow = 8;
 
+function getEarliestDataWeek() {
+  const log = getWL();
+  const missed = getMissed();
+  let earliest = null;
+
+  log.forEach(s => {
+    if (!earliest || s.date < earliest) earliest = s.date;
+  });
+  Object.keys(missed).forEach(key => {
+    // key format: dayKey-weekStartStr
+    const weekStartStr = key.split('-').slice(1).join('-');
+    if (weekStartStr && (!earliest || weekStartStr < earliest)) earliest = weekStartStr;
+  });
+
+  if (!earliest) return 0;
+  const earliestMonday = getWeekStartStr(new Date(earliest + 'T12:00:00'));
+  const currentMonday = getWeekStartStr(new Date());
+  const diffWeeks = Math.round((new Date(currentMonday) - new Date(earliestMonday)) / (7 * 86400000));
+  return Math.max(0, diffWeeks) + 1;
+}
+
 function renderWeeklyOverview() {
   const container = document.getElementById('wo-content');
   const log = getWL();
   const missed = getMissed();
+  const maxWeeks = getEarliestDataWeek();
 
-  // Build weeks of data (current + past)
+  // Build weeks of data (current + past), capped at the earliest week with data
   const weeks = [];
-  for (let w = 0; w < woWeeksToShow; w++) {
+  for (let w = 0; w < Math.min(woWeeksToShow, maxWeeks); w++) {
     const weekStart = getWeekStartDate(w);
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
@@ -3732,7 +3765,7 @@ function renderWeeklyOverview() {
       </div>
       <div class="wo-days-grid" style="grid-template-columns:repeat(6,1fr);">${dayHTML}${extraHTML}</div>
     </div>`;
-  }).join('') + (woWeeksToShow < 52 ? `
+  }).join('') + (woWeeksToShow < maxWeeks ? `
     <button onclick="showMoreWeeks()" style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:14px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--muted);cursor:pointer;letter-spacing:0.04em;margin-top:4px;">Show more weeks</button>
   ` : '');
 }
